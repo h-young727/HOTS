@@ -1,6 +1,6 @@
 # HOTS - Hunter's Operating System
 
-Welcome to my x86-32 operating system kernel written in C++, built as a self-learning project. Using the [OSDev Bare Bones](https://wiki.osdev.org/Bare_Bones) tutorial as a starting point, I'm aiming to understand and implement the fundamentals of OS kernel development, from bootloaders to interrupts and more. My OS targets i686, a subset of the x86-32 ISA, and for now boots via GRUB on QEMU.
+Here be my x86-32 operating system kernel written in C++, built as a self-learning project. Using the [OSDev Bare Bones](https://wiki.osdev.org/Bare_Bones) tutorial as a starting point, I'm aiming to understand and implement the fundamentals of OS kernel development, from bootloaders to interrupts and more. My OS targets i686, a subset of the x86-32 ISA, and for now boots via GRUB on QEMU.
 
 ---
 
