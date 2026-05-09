@@ -23,6 +23,8 @@ After this, the kernel entry point and kernel are each compiled into ELF object 
 
 I am developing this project on Windows using WSL2 (Ubuntu 24.04), though these steps should work on any Debian-based Linux environment, i.e. environments with the `apt` package manager. My environment was set up in direct accordance with the OSDev GCC Cross-Compiler guide. Below are all of the steps required to set up the development environment and build and run the OS.
 
+### System Dependencies
+
 ```bash
 sudo apt install -y build-essential bison flex diffutils libgmp-dev libmpfr-dev libmpc-dev libisl-dev texinfo nasm qemu-system-x86 grub-pc-bin grub-common xorriso mtools
 ```
@@ -37,12 +39,15 @@ Installs all system dependencies required to build the cross-compiler and run th
 - `grub-pc-bin`, `grub-common` -- GRUB bootloader binaries and tooling, including `grub-mkrescue` which packages the kernel ELF binary alongside GRUB into a bootable ISO disk image
 - `xorriso`, `mtools` -- provides tools required by `grub-mkrescue` to create the ISO
 
+### Environment Variables
+
 Before building the cross-compiler, we need to set three environment variables that the build process will reference throughout.
 
 ```bash
 export PREFIX="$HOME/opt/cross"
 ```
 Sets the installation directory for the cross-compiler.
+
 ```bash
 export TARGET=i686-elf
 ```
@@ -57,6 +62,8 @@ Adds the cross-compiler to PATH so its tools are callable by name from anywhere 
 mkdir -p ~/src && cd ~/src
 ```
 Creates and enters a temporary directory for downloading and compiling the cross-compiler source (can be deleted after installation).
+
+### Binutils
 
 ```bash
 wget https://ftp.gnu.org/gnu/binutils/binutils-2.46.0.tar.gz
@@ -79,6 +86,8 @@ Configures the binutils build for cross-compilation.
 make && make install
 ```
 Compiles binutils and installs it into `~/opt/cross/bin/`.
+
+### GCC
 
 ```bash
 cd ~/src
@@ -121,6 +130,8 @@ make install-target-libstdc++-v3
 ```
 Installs each component into `~/opt/cross/bin/`.
 
+### NASM
+
 ```bash
 cd ~/src
 wget https://www.nasm.us/pub/nasm/releasebuilds/3.01/nasm-3.01.tar.gz
@@ -138,6 +149,8 @@ Configures the NASM build. No special flags are needed since NASM is a host tool
 make -j$(nproc) && sudo make install
 ```
 Compiles NASM and installs it into `/usr/local/bin/`.
+
+### Finalization
 
 ```bash
 echo 'export PATH="$HOME/opt/cross/bin:$PATH"' >> ~/.bashrc
