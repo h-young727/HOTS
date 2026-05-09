@@ -21,7 +21,7 @@ After this, the kernel entry point and kernel are each compiled into ELF object 
 
 ## Environment Setup
 
-I am developing this project on Windows using WSL2 (Ubuntu 24.04), though these steps should work on any Debian-based Linux environment, i.e. environments with the `apt` package manager. My environment was set up in direct accordance with the OSDev GCC Cross-Compiler guide. Below are all of the steps required to set up the development environment and build and run the OS.
+I am developing this project on Windows using WSL2 (Ubuntu 24.04), though these steps should work on any Debian-based Linux environment, i.e. environments with the `apt` package manager. My environment was set up in direct accordance with [OSDev's GCC Cross-Compiler guide](https://wiki.osdev.org/GCC_Cross-Compiler). Below are all of the steps required to set up the development environment and build and run the OS.
 
 ### System Dependencies
 
@@ -172,5 +172,3 @@ nasm --version
 qemu-system-i386 --version
 grub-mkrescue --version
 ```
-
-## The Part After The Environmnt Setup
