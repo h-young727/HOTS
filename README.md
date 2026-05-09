@@ -30,14 +30,14 @@ sudo apt install -y build-essential bison flex diffutils libgmp-dev libmpfr-dev 
 ```
 Installs all system dependencies required to build the cross-compiler and run the OS.
 
-- `build-essential` -- provides core build tools required to automate build processes and compile software, including Make and the GNU Compiler Collection
-- `bison`, `flex`, `diffutils` -- parser generator, lexical analyzer, and file comparison tools required to build GCC
-- `libgmp-dev`, `libmpfr-dev`, `libmpc-dev`, `libisl-dev` -- numerical libraries required by GCC
-- `texinfo` -- documentation format required by GCC
-- `nasm` -- assembles kernel entry point bootstrap assembly code into an ELF file
-- `qemu-system-x86` -- emulates an x86 machine in software for development testing
-- `grub-pc-bin`, `grub-common` -- GRUB bootloader binaries and tooling, including `grub-mkrescue` which packages the kernel ELF binary alongside GRUB into a bootable ISO disk image
-- `xorriso`, `mtools` -- provides tools required by `grub-mkrescue` to create the ISO
+- `build-essential` - provides core build tools required to automate build processes and compile software, including Make and the GNU Compiler Collection
+- `bison`, `flex`, `diffutils` - parser generator, lexical analyzer, and file comparison tools required to build GCC
+- `libgmp-dev`, `libmpfr-dev`, `libmpc-dev`, `libisl-dev` - numerical libraries required by GCC
+- `texinfo` - documentation format required by GCC
+- `nasm` - assembles kernel entry point bootstrap assembly code into an ELF file
+- `qemu-system-x86` - emulates an x86 machine in software for development testing
+- `grub-pc-bin`, `grub-common` - GRUB bootloader binaries and tooling, including `grub-mkrescue` which packages the kernel ELF binary alongside GRUB into a bootable ISO disk image
+- `xorriso`, `mtools` - provides tools required by `grub-mkrescue` to create the ISO
 
 ### Environment Variables
 
@@ -76,11 +76,11 @@ Downloads and extracts the concurrent latest binutils release and creates a dedi
 ../binutils-2.46.0/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
 ```
 Configures the binutils build for cross-compilation.
-- `--target=$TARGET` -- produces tools that output `i686-elf` machine code
-- `--prefix="$PREFIX"` -- installs into `~/opt/cross`
-- `--with-sysroot` -- enables sysroot support, giving the linker a defined root to search for libraries rather than falling back to host system paths
-- `--disable-nls` -- tells binutils not to include native language support, thereby speeding up the build
-- `--disable-werror` -- prevents compiler warnings from crashing the build
+- `--target=$TARGET` - produces tools that output `i686-elf` machine code
+- `--prefix="$PREFIX"` - installs into `~/opt/cross`
+- `--with-sysroot` - enables sysroot support, giving the linker a defined root to search for libraries rather than falling back to host system paths
+- `--disable-nls` - tells binutils not to include native language support, thereby speeding up the build
+- `--disable-werror` - prevents compiler warnings from crashing the build
 
 ```bash
 make && make install
@@ -101,12 +101,12 @@ Downloads and extracts the concurrent latest GCC release and creates a dedicated
 ../gcc-15.2.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers --disable-hosted-libstdcxx
 ```
 Configures the GCC build for bare metal cross-compilation.
-- `--target=$TARGET` -- produces a compiler that outputs `i686-elf` machine code
-- `--prefix="$PREFIX"` -- installs into `~/opt/cross`
-- `--disable-nls` -- tells GCC not to include native language support, thereby speeding up the build
-- `--enable-languages=c,c++` -- builds both `i686-elf-gcc` and `i686-elf-g++`, the i686 compilers for C and C++, respectively
-- `--without-headers` -- tells GCC not to rely on any language library headers since the OS has none
-- `--disable-hosted-libstdcxx` -- disables the full C++ standard library, as it makes assumptions about the underlying OS
+- `--target=$TARGET` - produces a compiler that outputs `i686-elf` machine code
+- `--prefix="$PREFIX"` - installs into `~/opt/cross`
+- `--disable-nls` - tells GCC not to include native language support, thereby speeding up the build
+- `--enable-languages=c,c++` - builds both `i686-elf-gcc` and `i686-elf-g++`, the i686 compilers for C and C++, respectively
+- `--without-headers` - tells GCC not to rely on any language library headers since the OS has none
+- `--disable-hosted-libstdcxx` - disables the full C++ standard library, as it makes assumptions about the underlying OS
 
 ```bash
 make -j$(nproc) all-gcc
