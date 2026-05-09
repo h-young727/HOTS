@@ -1,78 +1,84 @@
 # HOTS - Hunter's Operating System
 
-Here be my x86-32 operating system kernel written in C++, built as a self-learning project. Using the [OSDev Bare Bones](https://wiki.osdev.org/Bare_Bones) tutorial as a starting point, I'm aiming to understand and implement the fundamentals of OS kernel development, from bootloaders to interrupts and more. My OS targets i686, a subset of the x86-32 ISA, and for now boots via GRUB on QEMU.
+Welcome to my x86-32 operating system kernel written in C++! This is purely a self-learning project, the motivation for which being nothing more than simply wanting to better understand how computers work. I began this journey with [OSDev Bare Bones](https://wiki.osdev.org/Bare_Bones), which seemed to provide an excellent starting-point tutorial. By the end this project, I want to thoroughly understand and know how to implement the fundamental requirements of an operating system kernel.
 
----
+## Disclaimer
+
+This README probably goes into far too unnecessary detail for most readers, but I wanted it to function as both an introduction to my project, as well as a unified reference for me in case I forget any of the numerous details of operating system development. As such, I will be assuming nothing about the reader's knowledge, and explain every single acronym.
+
+## Prerequisite Knowledge
+Simply put, an operating system (OS) is a type of software that acts as the interface between a computer's hardware and the software available for users. Since an OS is just software, it of course needs hardware to run on, and there are three core software components that work in tandem to start an OS. These components are the bootloader, kernel entry point, and kernel. To keep things simple, the bootloader and kernel entry point exist to start the kernel, and the kernel can be thought of as the main piece of the OS, or the OS itself.
+
+For this project, I will be using the GRand Unified Bootloader (GRUB), which is a well-established pre-packaged bootloader provided by GNU's Not Unix (GNU). GNU is a free and open-source software project that produces many useful tools for OS development, among many other things. The kernel entry point is written in assembly using the Netwide Assembler (NASM), a popular assembler for Intel x86 architectures due to its compatibility with 16-, 32-, and 64-bit systems and its use of Intel-style syntax. NASM takes assembly source code as input and produces machine code as output.
+
+x86 is the name of the instruction set architecture (ISA) primarily in use today by Intel and AMD central processing units (CPUs), and an ISA is the set of instructions a CPU is designed to understand and execute. This is important to know as the ISA of the CPU you want your OS to run on will affect how you design the OS. You also need to know the size of the CPU's registers. Registers are the most fundamental unit of memory on a CPU, and the "32" in "x86-32" refers to the number of bits a CPU register can hold. On a 32-bit system, a register can hold a 32-bit value, and when that value is interpreted as a memory address, it can point to 2^32 unique locations in memory. It is worth noting that each of those memory locations contains one byte of data.
+
+My OS targets i686, which is a specific subset of x86-32. For testing the OS during development, I will use Quick Emulator (QEMU), which is software that emulates x86 hardware, allowing the OS to be developed and tested without running on real hardware.
+
+Now it might have occurred to you that while writing the collection of C++ source code that is the kernel, you can't really compile that code on the OS hosting the development. Well, you could, but the resulting binary would contain assumptions about the host OS underneath it, which won't necessarily hold for your kernel. For this reason, we use a cross-compiler, which is a compiler that runs on your host machine but produces binaries targeting a completely different system. In this case, the cross-compiler targets i686-elf, meaning it produces 32-bit x86 machine code in the Executable and Linkable Format (ELF), and with zero assumptions about the OS. 
+
+After this, the kernel entry point and kernel are each compiled into ELF object files, which are then linked together into a single ELF binary. This binary is then packaged alongside GRUB into a bootable disk image in the International Organization for Standardization (ISO) format. A disk image is a file that represents the complete state of a physical storage device like a hard drive (HDD) or solid state drive (SSD). When your computer or emulator boots, the Basic Input/Output System (BIOS), which is motherboard firmware (specialized software pre-installed on hardware), reads the first 512 bytes of the disk, known as the Master Boot Record (MBR), which will contain the initial GRUB binary. GRUB then finds the kernel ELF binary within the same disk image, loads it into memory, and hands control to the kernel entry point, which can finally start the OS.
 
 ## Environment Setup
 
-The following steps document the full environment setup required to build and run this project, both for my own reference and so that I can repeat the steps on any machine.
+Below are all of the steps required to set up the development environment and build and run the OS.
 
 ```bash
-sudo apt install -y build-essential bison flex make diffutils libgmp-dev libmpfr-dev libmpc-dev libisl-dev texinfo nasm qemu-system-x86 grub-pc-bin grub-common xorriso mtools
+sudo apt install -y build-essential bison flex diffutils libgmp-dev libmpfr-dev libmpc-dev libisl-dev texinfo nasm qemu-system-x86 grub-pc-bin grub-common xorriso mtools
 ```
 Installs all system dependencies required to build the cross-compiler and run the OS.
 
-- `build-essential` -- meta-package providing `gcc`, `g++`, `make`, and other core build tools needed to compile software from source
-- `bison` -- parser generator required by GCC's build system
-- `flex` -- lexical analyzer required by GCC's build system
-- `make` -- build automation tool that runs Makefile recipes
-- `diffutils` -- provides `diff` and `cmp`, used by GCC's bootstrapping process
-- `libgmp-dev` -- GNU Multiple Precision library, required by GCC for arbitrary precision arithmetic
-- `libmpfr-dev` -- Multiple Precision Floating-Point library, required by GCC for floating point constant folding
-- `libmpc-dev` -- GNU MPC complex number library, required by GCC
-- `libisl-dev` -- Integer Set Library, used by GCC for loop optimization
-- `texinfo` -- documentation system required by GCC's build process
-- `nasm` -- Netwide Assembler, assembles `boot.asm` into an ELF object file
-- `qemu-system-x86` -- emulates a complete x86 machine in software for development and testing
-- `grub-pc-bin` -- GRUB bootloader binaries packaged into the bootable ISO
-- `grub-common` -- provides `grub-mkrescue`, which assembles the kernel and GRUB into a bootable ISO
-- `xorriso` -- ISO creation tool used internally by `grub-mkrescue`
-- `mtools` -- MS-DOS filesystem utilities required by `grub-mkrescue`
+- `build-essential` -- provides core build tools required to automate build processes and compile software, including Make and the GNU Compiler Collection
+- `bison`, `flex`, `diffutils` -- parser generator, lexical analyzer, and file comparison tools required to build GCC
+- `libgmp-dev`, `libmpfr-dev`, `libmpc-dev`, `libisl-dev` -- numerical libraries required by GCC
+- `texinfo` -- documentation format required by GCC
+- `nasm` -- assembles kernel entry point bootstrap assembly code into an ELF file
+- `qemu-system-x86` -- emulates an x86 machine in software for development testing
+- `grub-pc-bin`, `grub-common` -- GRUB bootloader binaries and tooling, including `grub-mkrescue` which packages the kernel ELF binary alongside GRUB into a bootable ISO disk image
+- `xorriso`, `mtools` -- provides tools required by `grub-mkrescue` to create the ISO
 
----
+Before building the cross-compiler, we need to set three environment variables that the build process will reference throughout.
 
 ```bash
 export PREFIX="$HOME/opt/cross"
 ```
-Sets the installation directory for the cross-compiler. All cross-compiler binaries will be installed to `~/opt/cross/bin/`.
-
+Sets the installation directory for the cross-compiler.
 ```bash
 export TARGET=i686-elf
 ```
-Sets the target triple. `i686` is 32-bit x86. `elf` means produce ELF binaries with no OS-specific assumptions. The resulting tools will be prefixed `i686-elf-` (e.g. `i686-elf-g++`).
+Sets the target architecture and binary format for the cross-compiler.
 
 ```bash
 export PATH="$PREFIX/bin:$PATH"
 ```
-Prepends the cross-compiler bin directory to PATH so tools like `i686-elf-g++` are callable by name from anywhere in the current session.
+Adds the cross-compiler to PATH so its tools are callable by name from anywhere in the current terminal session.
 
 ```bash
 mkdir -p ~/src && cd ~/src
 ```
-Creates and enters a temporary build workspace for downloading and compiling the cross-compiler source. Can be deleted after installation.
+Creates and enters a temporary directory for downloading and compiling the cross-compiler source (can be deleted after installation).
 
 ```bash
 wget https://ftp.gnu.org/gnu/binutils/binutils-2.46.0.tar.gz
 tar -xzf binutils-2.46.0.tar.gz
 mkdir build-binutils && cd build-binutils
 ```
-Downloads and extracts binutils 2.46.0, then creates a separate build directory. Binutils provides the cross-linker (`i686-elf-ld`) and related tools targeting bare metal i686.
+Downloads and extracts the concurrent latest binutils release and creates a dedicated build directory. Binutils provides the tools to link ELF binaries and more.
 
 ```bash
 ../binutils-2.46.0/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
 ```
 Configures the binutils build for cross-compilation.
-- `--target=$TARGET` -- produces tools that output `i686-elf` code, not host machine code
-- `--prefix="$PREFIX"` -- installs into `~/opt/cross` instead of system directories
-- `--with-sysroot` -- tells the linker not to search host system library paths
-- `--disable-nls` -- disables translation support, speeds up the build
-- `--disable-werror` -- prevents compiler warnings from failing the build
+- `--target=$TARGET` -- produces tools that output `i686-elf` machine code
+- `--prefix="$PREFIX"` -- installs into `~/opt/cross`
+- `--with-sysroot` -- enables sysroot support, giving the linker a defined root to search for libraries rather than falling back to host system paths
+- `--disable-nls` -- tells binutils not to include native language support, thereby speeding up the build
+- `--disable-werror` -- prevents compiler warnings from crashing the build
 
 ```bash
 make && make install
 ```
-Compiles binutils from source and installs it into `~/opt/cross/bin/`.
+Compiles binutils and installs it into `~/opt/cross/bin/`.
 
 ```bash
 cd ~/src
@@ -80,7 +86,7 @@ wget https://ftp.gnu.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.gz
 tar -xzf gcc-15.2.0.tar.gz
 mkdir build-gcc && cd build-gcc
 ```
-Downloads and extracts GCC 15.2.0, then creates a separate build directory. GCC provides `i686-elf-gcc` and `i686-elf-g++`, the compilers used to build all kernel C++ code into bare metal i686 binaries.
+Downloads and extracts the concurrent latest GCC release and creates a dedicated build directory. GCC provides the compilers used to build all kernel C++ code into i686 binaries.
 
 ```bash
 ../gcc-15.2.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers --disable-hosted-libstdcxx
@@ -88,25 +94,25 @@ Downloads and extracts GCC 15.2.0, then creates a separate build directory. GCC 
 Configures the GCC build for bare metal cross-compilation.
 - `--target=$TARGET` -- produces a compiler that outputs `i686-elf` machine code
 - `--prefix="$PREFIX"` -- installs into `~/opt/cross`
-- `--disable-nls` -- disables translation support
-- `--enable-languages=c,c++` -- builds both `i686-elf-gcc` and `i686-elf-g++`
-- `--without-headers` -- tells GCC not to rely on any system headers since the OS has none
-- `--disable-hosted-libstdcxx` -- disables the full C++ standard library, which requires an OS underneath it
+- `--disable-nls` -- tells GCC not to include native language support, thereby speeding up the build
+- `--enable-languages=c,c++` -- builds both `i686-elf-gcc` and `i686-elf-g++`, the i686 compilers for C and C++, respectively
+- `--without-headers` -- tells GCC not to rely on any language library headers since the OS has none
+- `--disable-hosted-libstdcxx` -- disables the full C++ standard library, as it makes assumptions about the underlying OS
 
 ```bash
 make -j$(nproc) all-gcc
 ```
-Compiles the GCC compiler itself, parallelized across all available CPU cores.
+Compiles the GCC compiler for the target system, parallelized across all available CPU cores for a faster build.
 
 ```bash
 make -j$(nproc) all-target-libgcc
 ```
-Builds a minimal GCC runtime library providing low-level operations like integer division that the compiler may emit calls to.
+Builds the GCC runtime library for the target system, parallelized across all available CPU cores for a faster build.
 
 ```bash
 make -j$(nproc) all-target-libstdc++-v3
 ```
-Builds a freestanding (no-OS) version of the C++ standard library.
+Builds a version of the C++ standard library for the target system, parallelized across all available CPU cores for a faster build.
 
 ```bash
 make install-gcc
@@ -120,39 +126,38 @@ cd ~/src
 wget https://www.nasm.us/pub/nasm/releasebuilds/3.01/nasm-3.01.tar.gz
 tar -xzf nasm-3.01.tar.gz
 cd nasm-3.01
-./configure
-make -j$(nproc)
-sudo make install
 ```
-Downloads, builds, and installs NASM 3.01 from source. Built from source to get the latest version, as the apt package is outdated.
+Downloads and extracts the concurrent latest NASM release.
+
+```bash
+./configure
+```
+Configures the NASM build. No special flags are needed since NASM is a host tool.
+
+```bash
+make -j$(nproc) && sudo make install
+```
+Compiles NASM and installs it into `/usr/local/bin/`.
 
 ```bash
 echo 'export PATH="$HOME/opt/cross/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
-Makes the cross-compiler permanently available in all future terminal sessions. Without this, the PATH exports above only last for the current session.
+Makes the cross-compiler permanently available in all future terminal sessions.
 
 ```bash
 rm -rf ~/src
 ```
-Deletes the temporary build workspace. The cross-compiler is fully installed into `~/opt/cross` and the source directories are no longer needed.
+Deletes the temporary build directory. The cross-compiler should now be fully installed into `~/opt/cross`, so the source directories are no longer needed.
 
----
-
-## Verify Installation
+Verify that the following have installed correctly and are up to date:
 
 ```bash
-i686-elf-gcc --version     # 15.2.0
-i686-elf-g++ --version     # 15.2.0
-nasm --version              # 3.01
-qemu-system-x86_64 --version
+i686-elf-gcc --version
+i686-elf-g++ --version
+nasm --version
+qemu-system-i386 --version
 grub-mkrescue --version
 ```
 
----
-
-## References
-
-- [OSDev Wiki -- Bare Bones](https://wiki.osdev.org/Bare_Bones)
-- [OSDev Wiki -- GCC Cross Compiler](https://wiki.osdev.org/GCC_Cross-Compiler)
-- [NASM Documentation](https://www.nasm.us/docs.php)
+## The Part After The Environmnt Setup
