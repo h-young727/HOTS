@@ -172,3 +172,7 @@ nasm --version
 qemu-system-i386 --version
 grub-mkrescue --version
 ```
+
+## Kernel Entry Point
+
+WIP
