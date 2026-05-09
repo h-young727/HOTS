@@ -175,4 +175,16 @@ grub-mkrescue --version
 
 ## Kernel Entry Point
 
-WIP
+WIP. See `boot.asm`.
+
+## Kernel
+
+WIP. See `kernel.cpp`.
+
+## Linker
+
+WIP. See `linker.ld`.
+
+## Disk Image
+
+WIP. See `grub.cfg`
