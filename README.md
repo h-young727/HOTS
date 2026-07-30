@@ -1,6 +1,6 @@
 # HOTS - Hunter's Operating System
 
-Welcome to my x86-32 operating system kernel written in C++! This is purely a self-learning project, the motivation for which being nothing more than simply wanting to better understand how computers work. I began this journey with [OSDev's Bare Bones Tutorial](https://wiki.osdev.org/Bare_Bones), which seemed to provide an excellent starting point. By the end this project, I hope to thoroughly understand and know how to implement the fundamental requirements of an operating system kernel.
+Welcome to my x86-32 operating system kernel written in C++! This is purely a self-learning project, the motivation for which being nothing more than simply wanting to better understand how computers work. I began this journey with [OSDev's Bare Bones Tutorial](https://wiki.osdev.org/Bare_Bones), which seemed to provide an excellent starting point. By the end of this project, I hope to understand the fundamental requirements of an operating system kernel and how to implement them.
 
 ## Disclaimer
 
